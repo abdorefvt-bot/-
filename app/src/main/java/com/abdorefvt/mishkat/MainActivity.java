@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
 
     @Override public void onBackPressed() {
         if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        else moveTaskToBack(true);
     }
 
     @Override protected void onDestroy() {
