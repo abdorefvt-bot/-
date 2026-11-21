@@ -2,10 +2,13 @@ package com.abdorefvt.mishkat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -19,25 +22,44 @@ public class MainActivity extends Activity {
         webView = new WebView(this);
         setContentView(webView);
 
-        WebSettings s = webView.getSettings();
-        s.setJavaScriptEnabled(true);
-        s.setDomStorageEnabled(true);
-        s.setMediaPlaybackRequiresUserGesture(false);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
 
         if (state == null) webView.loadUrl("https://mishkatt.framer.website");
         else webView.restoreState(state);
 
-        // Keep a media-playback foreground service alive while the WebView audio is in use.
         Intent service = new Intent(this, AudioKeepAliveService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(service);
         else startService(service);
 
+        requestNotificationPermission();
+        requestExactAlarmPermissionIfNeeded();
         AdhkarScheduler.schedule(this);
+    }
+
+    private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 100);
+        }
+    }
+
+    private void requestExactAlarmPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                try {
+                    Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                        Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+                } catch (Exception ignored) {
+                    // The scheduler uses an inexact idle-allowed fallback if exact alarms are not granted.
+                }
+            }
         }
     }
 
@@ -52,7 +74,6 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
-        // Do not stop the playback service when the Activity is recreated or backgrounded.
         if (isFinishing() && webView != null) webView.destroy();
         super.onDestroy();
     }
