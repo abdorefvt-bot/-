@@ -41,7 +41,12 @@ public class MainActivity extends Activity {
         AdhkarScheduler.schedule(this);
     }
 
-    @Override protected void onResume() {\n        super.onResume();\n        AdhkarScheduler.schedule(this);\n    }\n\n    private void requestNotificationPermission() {
+    @Override protected void onResume() {
+        super.onResume();
+        AdhkarScheduler.schedule(this);
+    }
+
+    private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 100);
