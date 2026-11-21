@@ -9,7 +9,7 @@ import android.os.Build;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 
-public class AudioKeepAliveService extends Service {
+public final class AudioKeepAliveService extends Service {
     private static final String CHANNEL_ID = "mishkat_audio_playback";
     private static final int NOTIFICATION_ID = 2401;
 
