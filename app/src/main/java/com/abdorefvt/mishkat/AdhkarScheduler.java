@@ -1,16 +1,42 @@
 package com.abdorefvt.mishkat;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+
 public final class AdhkarScheduler {
- private AdhkarScheduler(){}
- public static void schedule(Context c){
-  AlarmManager am=(AlarmManager)c.getSystemService(Context.ALARM_SERVICE);
-  Intent i=new Intent(c,AdhkarAlarmReceiver.class);
-  PendingIntent pi=PendingIntent.getBroadcast(c,3001,i,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
-  long first=System.currentTimeMillis()+30L*60L*1000L, interval=30L*60L*1000L;
-  if(Build.VERSION.SDK_INT>=23)am.setInexactRepeating(AlarmManager.RTC_WAKEUP,first,interval,pi);else am.setRepeating(AlarmManager.RTC_WAKEUP,first,interval,pi);
- }
+    private static final int REQUEST_CODE = 3001;
+    private static final long INTERVAL = 15L * 60L * 1000L;
+
+    private AdhkarScheduler() {}
+
+    public static void schedule(Context context) {
+        long now = System.currentTimeMillis();
+        long next = ((now / INTERVAL) + 1L) * INTERVAL;
+        scheduleAt(context, next);
+    }
+
+    public static void scheduleAt(Context context, long triggerAtMillis) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, AdhkarAlarmReceiver.class);
+        intent.putExtra("scheduled_at", triggerAtMillis);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+            context, REQUEST_CODE, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+            } else {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+        }
+    }
 }
