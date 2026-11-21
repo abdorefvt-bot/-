@@ -1,4 +1,5 @@
 name: Build Mishkat APK
+# Rebuild after launcher icon safe-area adjustment
 
 on:
   workflow_dispatch:
