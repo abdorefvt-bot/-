@@ -6,16 +6,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import java.util.Calendar;
+
 public final class AdhkarScheduler {
     private static final int REQUEST_CODE = 3001;
-    private static final long INTERVAL = 15L * 60L * 1000L;
 
     private AdhkarScheduler() {}
 
     public static void schedule(Context context) {
-        long now = System.currentTimeMillis();
-        long next = ((now / INTERVAL) + 1L) * INTERVAL;
-        scheduleAt(context, next);
+        Calendar next = Calendar.getInstance();
+        next.set(Calendar.SECOND, 0);
+        next.set(Calendar.MILLISECOND, 0);
+        int minute = next.get(Calendar.MINUTE);
+        if (minute < 30) {
+            next.set(Calendar.MINUTE, 30);
+        } else {
+            next.add(Calendar.HOUR_OF_DAY, 1);
+            next.set(Calendar.MINUTE, 0);
+        }
+        scheduleAt(context, next.getTimeInMillis());
     }
 
     public static void scheduleAt(Context context, long triggerAtMillis) {
