@@ -7,11 +7,13 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import androidx.core.app.NotificationCompat;
 
 public final class AudioKeepAliveService extends Service {
     private static final String CHANNEL_ID = "mishkat_audio_playback";
     private static final int NOTIFICATION_ID = 2401;
+    private PowerManager.WakeLock wakeLock;
 
     @Override public void onCreate() {
         super.onCreate();
@@ -19,7 +21,7 @@ public final class AudioKeepAliveService extends Service {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentTitle("مشكاة")
-            .setContentText("خدمة تشغيل الصوت في الخلفية")
+            .setContentText("التلاوة مستمرة في الخلفية")
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -31,13 +33,22 @@ public final class AudioKeepAliveService extends Service {
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
+
+        // Keep the CPU running while the foreground media service is active.
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if (powerManager != null) {
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "Mishkat:AudioPlayback");
+            wakeLock.setReferenceCounted(false);
+            wakeLock.acquire(6L * 60L * 60L * 1000L);
+        }
     }
 
     private void createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, "تشغيل الصوت", NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription("إبقاء تشغيل الصوت متاحًا عند الانتقال إلى تطبيق آخر");
+            channel.setDescription("إبقاء تشغيل التلاوة متاحًا عند الانتقال إلى تطبيق آخر");
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) manager.createNotificationChannel(channel);
         }
@@ -45,6 +56,11 @@ public final class AudioKeepAliveService extends Service {
 
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
+    }
+
+    @Override public void onDestroy() {
+        if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        super.onDestroy();
     }
 
     @Override public IBinder onBind(Intent intent) { return null; }
