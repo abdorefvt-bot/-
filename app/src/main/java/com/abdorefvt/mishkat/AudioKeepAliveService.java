@@ -20,7 +20,7 @@ public final class AudioKeepAliveService extends Service {
         createChannel();
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_mishkat_notification)
-            .setContentTitle("Mishkat")
+            // Keep only the service description; Android already shows the app name.
             .setContentText("التلاوة مستمرة في الخلفية")
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setOngoing(true)
@@ -34,7 +34,6 @@ public final class AudioKeepAliveService extends Service {
             startForeground(NOTIFICATION_ID, notification);
         }
 
-        // Keep the CPU running while the foreground media service is active.
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         if (powerManager != null) {
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
