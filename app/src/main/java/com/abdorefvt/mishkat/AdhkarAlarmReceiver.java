@@ -6,9 +6,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.app.AlarmManager;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
@@ -60,16 +57,13 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
 
         android.content.SharedPreferences prefs = context.getSharedPreferences("mishkat", Context.MODE_PRIVATE);
         String message;
-        String title;
         if (isVerseTime) {
             int index = prefs.getInt("verse_index", 0) % VERSES.length;
             message = "﴿" + VERSES[index] + "﴾";
-            title = "آية قرآنية";
             prefs.edit().putInt("verse_index", (index + 1) % VERSES.length).apply();
         } else {
             int index = prefs.getInt("dhikr_index", 0) % ADHKAR.length;
             message = ADHKAR[index];
-            title = "ذِكْر";
             prefs.edit().putInt("dhikr_index", (index + 1) % ADHKAR.length).apply();
         }
 
@@ -84,8 +78,7 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(context, "adhkar")
             .setSmallIcon(R.drawable.ic_mishkat_notification)
-            .setLargeIcon(getAppIcon(context))
-            .setContentTitle(title)
+            .setContentTitle("Mishkat")
             .setContentText(message)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
             .setAutoCancel(true)
@@ -97,13 +90,4 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
         AdhkarScheduler.schedule(context);
     }
 
-    private Bitmap getAppIcon(Context context) {
-        Drawable drawable = context.getDrawable(R.drawable.mishkat_icon);
-        int size = (int)(context.getResources().getDisplayMetrics().density * 64);
-        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, size, size);
-        drawable.draw(canvas);
-        return bitmap;
-    }
 }
