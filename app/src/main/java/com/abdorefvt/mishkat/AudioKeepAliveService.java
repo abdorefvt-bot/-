@@ -20,7 +20,7 @@ public final class AudioKeepAliveService extends Service {
         createChannel();
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_mishkat_notification)
-            .setContentTitle("مشكاة")
+            .setContentTitle("Mishkat")
             .setContentText("التلاوة مستمرة في الخلفية")
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setOngoing(true)
