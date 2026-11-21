@@ -10,7 +10,8 @@
     <application
         android:theme="@style/AppTheme"
         android:label="Mishkat"
-        android:icon="@drawable/mishkat_icon">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true">
