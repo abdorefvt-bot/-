@@ -55,7 +55,8 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.setTimeInMillis(scheduledAt);
         int minute = cal.get(java.util.Calendar.MINUTE);
-        boolean isVerseTime = minute == 0;
+        int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
+        boolean isVerseTime = minute == 0 && hour % 2 == 0;
 
         android.content.SharedPreferences prefs = context.getSharedPreferences("mishkat", Context.MODE_PRIVATE);
         String message;
@@ -90,10 +91,10 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
             .setAutoCancel(true)
             .setContentIntent(pendingIntent);
 
-        int notificationId = 4100 + (int)((scheduledAt / (15L * 60L * 1000L)) % 1000L);
+        int notificationId = 4100 + (int)((scheduledAt / (30L * 60L * 1000L)) % 1000L);
         manager.notify(notificationId, notification.build());
 
-        AdhkarScheduler.scheduleAt(context, scheduledAt + 15L * 60L * 1000L);
+        AdhkarScheduler.schedule(context);
     }
 
     private Bitmap getAppIcon(Context context) {
