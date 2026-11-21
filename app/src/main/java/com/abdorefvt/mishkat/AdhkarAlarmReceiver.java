@@ -6,11 +6,14 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.app.AlarmManager;
+import android.media.AudioAttributes;
+import android.provider.Settings;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
 public class AdhkarAlarmReceiver extends BroadcastReceiver {
+    private static final String CHANNEL_ID = "adhkar_sound_v2";
+
     private static final String[] VERSES = {
         "فَمَن تَبِعَ هُدَايَ فَلَا خَوْفٌ عَلَيْهِمْ وَلَا هُمْ يَحْزَنُونَ",
         "فَلَوْلَا فَضْلُ اللَّهِ عَلَيْكُمْ وَرَحْمَتُهُ لَكُنتُم مِّنَ الْخَاسِرِينَ",
@@ -69,16 +72,26 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
 
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= 26) {
-            manager.createNotificationChannel(new NotificationChannel("adhkar", "الآيات والأذكار", NotificationManager.IMPORTANCE_DEFAULT));
+            NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID, "إشعارات مشكاة", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("تنبيهات الآيات والأذكار مع صوت الإشعار الافتراضي");
+            channel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI,
+                new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build());
+            manager.createNotificationChannel(channel);
         }
 
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
             new Intent(context, MainActivity.class),
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(context, "adhkar")
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_mishkat_notification)
             .setContentTitle("Mishkat")
+            .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+            .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
             .setContentText(message)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
             .setAutoCancel(true)
