@@ -19,7 +19,7 @@ public final class AudioKeepAliveService extends Service {
         super.onCreate();
         createChannel();
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setSmallIcon(R.drawable.ic_mishkat_notification)
             .setContentTitle("مشكاة")
             .setContentText("التلاوة مستمرة في الخلفية")
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
