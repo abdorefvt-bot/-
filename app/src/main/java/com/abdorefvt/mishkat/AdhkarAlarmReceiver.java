@@ -62,7 +62,7 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
         String title;
         if (isVerseTime) {
             int index = prefs.getInt("verse_index", 0) % VERSES.length;
-            message = VERSES[index];
+            message = "﴿" + VERSES[index] + "﴾";
             title = "آية قرآنية";
             prefs.edit().putInt("verse_index", (index + 1) % VERSES.length).apply();
         } else {
