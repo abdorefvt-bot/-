@@ -56,7 +56,9 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
         cal.setTimeInMillis(scheduledAt);
         int minute = cal.get(java.util.Calendar.MINUTE);
         int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
-        boolean isVerseTime = minute == 0 && hour % 2 == 0;
+
+        // Alternate strictly at every half-hour boundary: :00 = verse, :30 = dhikr.
+        boolean isVerseTime = ((hour * 2 + minute / 30) % 2) == 0;
 
         android.content.SharedPreferences prefs = context.getSharedPreferences("mishkat", Context.MODE_PRIVATE);
         String message;
@@ -89,11 +91,12 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_mishkat_notification)
-            .setContentTitle("Mishkat")
-            .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
-            .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
+            // Android supplies the app label ("Mishkat") in the notification header.
+            // Leaving the content title unset prevents the app name from appearing twice.
             .setContentText(message)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+            .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+            .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent);
 
@@ -102,5 +105,4 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
 
         AdhkarScheduler.schedule(context);
     }
-
 }
