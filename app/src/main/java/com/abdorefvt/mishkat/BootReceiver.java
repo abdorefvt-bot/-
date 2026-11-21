@@ -1,7 +1,16 @@
 package com.abdorefvt.mishkat;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
 public class BootReceiver extends BroadcastReceiver {
- @Override public void onReceive(Context c,Intent i){if(Intent.ACTION_BOOT_COMPLETED.equals(i.getAction()))AdhkarScheduler.schedule(c);}
+    @Override public void onReceive(Context context, Intent intent) {
+        String action = intent != null ? intent.getAction() : null;
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action)
+            || Intent.ACTION_TIME_CHANGED.equals(action)
+            || Intent.ACTION_TIMEZONE_CHANGED.equals(action)) {
+            AdhkarScheduler.schedule(context);
+        }
+    }
 }
