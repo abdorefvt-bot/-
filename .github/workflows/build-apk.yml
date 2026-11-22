@@ -35,6 +35,12 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Render original SVG launcher logo at high resolution
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          rsvg-convert -w 2048 -h 2048 "مِشكاة_20261123_015749_0000.svg" -o app/src/main/res/drawable-nodpi/mishkat_launcher_logo.png
+
       - name: Build debug APK
         run: gradle --no-daemon assembleDebug
 
