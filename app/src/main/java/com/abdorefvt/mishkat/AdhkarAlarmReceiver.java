@@ -52,31 +52,30 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
         long scheduledAt = intent != null ? intent.getLongExtra("scheduled_at", 0L) : 0L;
         if (scheduledAt <= 0L) scheduledAt = System.currentTimeMillis();
 
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.setTimeInMillis(scheduledAt);
-        int minute = cal.get(java.util.Calendar.MINUTE);
-        int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
-
-        // Alternate strictly at every half-hour boundary: :00 = verse, :30 = dhikr.
-        boolean isVerseTime = ((hour * 2 + minute / 30) % 2) == 0;
-
-        android.content.SharedPreferences prefs = context.getSharedPreferences("mishkat", Context.MODE_PRIVATE);
+        android.content.SharedPreferences prefs =
+            context.getSharedPreferences("mishkat", Context.MODE_PRIVATE);
+        int sequence = prefs.getInt("hourly_notification_sequence", 0);
         String message;
-        if (isVerseTime) {
+
+        // Sequence starts with a verse, then a dhikr, and alternates every hour.
+        if ((sequence % 2) == 0) {
             int index = prefs.getInt("verse_index", 0) % VERSES.length;
             message = "﴿" + VERSES[index] + "﴾";
-            prefs.edit().putInt("verse_index", (index + 1) % VERSES.length).apply();
+            prefs.edit().putInt("verse_index", (index + 1) % VERSES.length)
+                .putInt("hourly_notification_sequence", sequence + 1).apply();
         } else {
             int index = prefs.getInt("dhikr_index", 0) % ADHKAR.length;
             message = ADHKAR[index];
-            prefs.edit().putInt("dhikr_index", (index + 1) % ADHKAR.length).apply();
+            prefs.edit().putInt("dhikr_index", (index + 1) % ADHKAR.length)
+                .putInt("hourly_notification_sequence", sequence + 1).apply();
         }
 
-        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager manager =
+            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, "إشعارات مشكاة", NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("تنبيهات الآيات والأذكار مع صوت الإشعار الافتراضي");
+            channel.setDescription("تنبيهات الآيات والأذكار كل ساعة");
             channel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI,
                 new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -91,8 +90,6 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_mishkat_notification)
-            // Android supplies the app label ("Mishkat") in the notification header.
-            // Leaving the content title unset prevents the app name from appearing twice.
             .setContentText(message)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
             .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
@@ -100,7 +97,7 @@ public class AdhkarAlarmReceiver extends BroadcastReceiver {
             .setAutoCancel(true)
             .setContentIntent(pendingIntent);
 
-        int notificationId = 4100 + (int)((scheduledAt / (30L * 60L * 1000L)) % 1000L);
+        int notificationId = 4100 + (int)((scheduledAt / (60L * 60L * 1000L)) % 1000L);
         manager.notify(notificationId, notification.build());
 
         AdhkarScheduler.schedule(context);
