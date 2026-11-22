@@ -15,15 +15,10 @@ public final class AdhkarScheduler {
 
     public static void schedule(Context context) {
         Calendar next = Calendar.getInstance();
+        next.add(Calendar.HOUR_OF_DAY, 1);
+        next.set(Calendar.MINUTE, 0);
         next.set(Calendar.SECOND, 0);
         next.set(Calendar.MILLISECOND, 0);
-        int minute = next.get(Calendar.MINUTE);
-        if (minute < 30) {
-            next.set(Calendar.MINUTE, 30);
-        } else {
-            next.add(Calendar.HOUR_OF_DAY, 1);
-            next.set(Calendar.MINUTE, 0);
-        }
         scheduleAt(context, next.getTimeInMillis());
     }
 
