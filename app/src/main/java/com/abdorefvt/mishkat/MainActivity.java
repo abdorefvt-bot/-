@@ -69,9 +69,9 @@ public class MainActivity extends Activity {
     private void installAudioTracking() {
         String script = "(function(){"
             + "if(window.__mishkatAudioTracking)return;window.__mishkatAudioTracking=true;"
-            + "function report(){try{var a=[].slice.call(document.querySelectorAll('audio,video'));"
+            + "var lastPlaying=null;function report(){try{var a=[].slice.call(document.querySelectorAll('audio,video'));"
             + "var playing=a.some(function(x){return !x.paused&&!x.ended;});"
-            + "window.MishkatAudio.onPlaybackChanged(playing);}catch(e){}}"
+            + "if(playing!==lastPlaying){lastPlaying=playing;window.MishkatAudio.onPlaybackChanged(playing);}}catch(e){}}"
             + "function bind(el){if(el.__mishkatBound)return;el.__mishkatBound=true;"
             + "['play','playing','pause','ended','emptied'].forEach(function(ev){el.addEventListener(ev,report);});}"
             + "function scan(){document.querySelectorAll('audio,video').forEach(bind);report();}"
