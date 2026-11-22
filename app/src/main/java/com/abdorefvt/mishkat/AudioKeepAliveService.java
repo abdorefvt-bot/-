@@ -11,6 +11,7 @@ import android.os.PowerManager;
 import androidx.core.app.NotificationCompat;
 
 public final class AudioKeepAliveService extends Service {
+    public static final String ACTION_STOP_WEB_AUDIO = "com.abdorefvt.mishkat.STOP_WEB_AUDIO";
     private static final String CHANNEL_ID = "mishkat_audio_playback";
     private static final int NOTIFICATION_ID = 2401;
     private PowerManager.WakeLock wakeLock;
@@ -20,7 +21,7 @@ public final class AudioKeepAliveService extends Service {
         createChannel();
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_mishkat_notification)
-            // Keep only the service description; Android already shows the app name.
+            .setContentTitle("مشكاة")
             .setContentText("التلاوة مستمرة في الخلفية")
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setOngoing(true)
@@ -46,15 +47,22 @@ public final class AudioKeepAliveService extends Service {
     private void createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID, "تشغيل الصوت", NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription("إبقاء تشغيل التلاوة متاحًا عند الانتقال إلى تطبيق آخر");
+                CHANNEL_ID, "تشغيل التلاوة", NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("يظهر هذا الإشعار أثناء تشغيل التلاوة في الخلفية فقط");
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) manager.createNotificationChannel(channel);
         }
     }
 
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_STICKY;
+        return START_NOT_STICKY;
+    }
+
+    @Override public void onTaskRemoved(Intent rootIntent) {
+        sendBroadcast(new Intent(ACTION_STOP_WEB_AUDIO).setPackage(getPackageName()));
+        stopForeground(true);
+        stopSelf();
+        super.onTaskRemoved(rootIntent);
     }
 
     @Override public void onDestroy() {
