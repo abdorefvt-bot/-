@@ -39,12 +39,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y librsvg2-bin python3-pil
-          rsvg-convert -w 2048 -h 2048 "مِشكاة_20261123_015749_0000.svg" -o /tmp/mishkat_logo_raw.png
+          rsvg-convert -w 4096 -h 4096 "مِشكاة_20261123_015749_0000.svg" -o /tmp/mishkat_logo_raw.png
           python3 - <<'PY'
           from PIL import Image
           source = Image.open("/tmp/mishkat_logo_raw.png").convert("RGBA")
-          # Fit the full wordmark inside Android's adaptive-icon safe circle.
-          source.thumbnail((1320, 1320), Image.Resampling.LANCZOS)
+          # Keep the wordmark smaller; render large first, then downsample for clean edges.
+          source.thumbnail((900, 900), Image.Resampling.LANCZOS)
           canvas = Image.new("RGBA", (2048, 2048), (0, 0, 0, 0))
           canvas.alpha_composite(source, ((2048-source.width)//2, (2048-source.height)//2))
           canvas.save("app/src/main/res/drawable-nodpi/mishkat_launcher_logo.png")
